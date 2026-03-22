@@ -1,6 +1,6 @@
 <template>
   <div id="homeView">
-    <!-- 筛选卡片（恢复原版筛选） -->
+    <!-- 筛选卡片 -->
     <a-card class="filter-card">
       <a-row :gutter="18">
         <a-col :span="4">
@@ -83,6 +83,9 @@
         </a-col>
       </a-row>
     </a-card>
+
+    <!-- 智能推荐卡片（独立区域，不参与flex布局） -->
+    <RecommendCard @select-room="onRecommendSelect" />
 
     <!-- 日期选择 + 刷新 -->
     <a-card class="date-card">
@@ -168,7 +171,7 @@
           </a-space>
         </div>
 
-        <!-- 时间方格条（32个方格：8:00-24:00） -->
+        <!-- 时间方格条 -->
         <div
             class="time-slots"
             @mousedown="startSelection($event, room.id)"
@@ -194,7 +197,6 @@
               :data-room-id="room.id"
               @click.stop="toggleSlot(room.id, index, $event)"
           >
-            <!-- 可显示简短时间（可选） -->
           </div>
         </div>
       </div>
@@ -284,8 +286,6 @@ import {
   IconRefresh,
   IconUser,
   IconLocation,
-  IconClockCircle,
-  IconEye,
   IconCalendar,
   IconCheck
 } from '@arco-design/web-vue/es/icon';
@@ -299,6 +299,7 @@ import {
   UserEquipmentCategoryControllerService
 } from '/generated';
 import type { RoomVO, UserVO, EquipmentCategory } from '/generated';
+import RecommendCard from "@/components/RecommendCard.vue";
 
 const router = useRouter();
 
@@ -322,7 +323,7 @@ const buildingLoading = ref(false);
 // 时间配置
 const START_HOUR = 8;
 const END_HOUR = 24;
-const TOTAL_SLOTS = (END_HOUR - START_HOUR) * 2; // 32个
+const TOTAL_SLOTS = (END_HOUR - START_HOUR) * 2;
 const slotWidth = 35;
 
 // 搜索参数
@@ -341,9 +342,7 @@ const timeSlots = computed(() => {
   const slots = [];
   for (let hour = START_HOUR; hour < END_HOUR; hour++) {
     slots.push({ hour, minute: 0, label: `${hour.toString().padStart(2, '0')}:00` });
-    if (hour < END_HOUR) {
-      slots.push({ hour, minute: 30, label: `${hour.toString().padStart(2, '0')}:30` });
-    }
+    slots.push({ hour, minute: 30, label: `${hour.toString().padStart(2, '0')}:30` });
   }
   slots.push({ hour: 24, minute: 0, label: '24:00' });
   return slots;
@@ -396,40 +395,29 @@ const selectedTimeRange = computed(() => {
 // ==================== 筛选逻辑 ====================
 const applyFilters = () => {
   filteredRoomList.value = roomList.value.filter(room => {
-    // 会议室名称
     if (searchParams.roomName && !room.roomName.toLowerCase().includes(searchParams.roomName.toLowerCase())) {
       return false;
     }
-
-    // 楼栋
     if (searchParams.building && room.building !== searchParams.building) {
       return false;
     }
-
-    // 楼层
     if (searchParams.floor && room.floor !== searchParams.floor) {
       return false;
     }
-
-    // 容纳人数
     if (searchParams.minCapacity && room.capacity < searchParams.minCapacity) {
       return false;
     }
-
-    // 设备分类（必须包含所有选中的分类）
     if (searchParams.categoryIds.length > 0) {
       const roomCategoryIds = room.equipmentList?.map((eq: any) => eq.categoryId) || [];
       const hasAll = searchParams.categoryIds.every(cid => roomCategoryIds.includes(cid));
       if (!hasAll) return false;
     }
-
     return true;
   });
 };
 
 // ==================== 加载数据 ====================
 
-// 加载楼栋列表
 const loadBuildings = async () => {
   buildingLoading.value = true;
   try {
@@ -444,7 +432,6 @@ const loadBuildings = async () => {
   }
 };
 
-// 楼栋变化时加载楼层
 const onBuildingChange = async (building: string) => {
   if (!building) {
     floorList.value = [];
@@ -465,7 +452,6 @@ const onBuildingChange = async (building: string) => {
   }
 };
 
-// 加载设备分类列表
 const loadCategoryList = async () => {
   categoryLoading.value = true;
   try {
@@ -480,11 +466,9 @@ const loadCategoryList = async () => {
   }
 };
 
-// 加载会议室列表并生成方格状态
 const loadRoomList = async () => {
   loading.value = true;
   try {
-    // 1. 获取所有可用会议室（不加筛选，为了后续前端筛选）
     const roomRes = await UserRoomControllerService.listAvailableRoomsUsingPost({
       status: 0,
       pageSize: 100,
@@ -498,7 +482,6 @@ const loadRoomList = async () => {
 
     const rooms = roomRes.data.records || [];
 
-    // 2. 获取当天的所有预定记录
     const startOfDay = dayjs(selectedDate.value).hour(START_HOUR).minute(0).second(0).format('YYYY-MM-DD HH:mm:ss');
     const endOfDay = dayjs(selectedDate.value).hour(END_HOUR).minute(0).second(0).format('YYYY-MM-DD HH:mm:ss');
 
@@ -509,13 +492,11 @@ const loadRoomList = async () => {
 
     const bookings = bookingRes.code === 0 ? bookingRes.data || [] : [];
 
-    // 3. 为每个会议室生成32个方格状态
     roomList.value = rooms.map((room: RoomVO) => {
       const slots = generateTimeSlots(room.id, bookings, selectedDate.value);
       return { ...room, slots };
     });
 
-    // 4. 应用筛选
     applyFilters();
 
   } catch (error: any) {
@@ -525,7 +506,6 @@ const loadRoomList = async () => {
   }
 };
 
-// 生成32个时间方格的状态
 const generateTimeSlots = (roomId: number, bookings: any[], date: string) => {
   const slots = [];
   const now = dayjs();
@@ -543,12 +523,10 @@ const generateTimeSlots = (roomId: number, bookings: any[], date: string) => {
 
     let status = 'available';
 
-    // 判断是否已过去
     if (date === now.format('YYYY-MM-DD') && slotTime.isBefore(now)) {
       status = 'past';
     }
 
-    // 判断是否被预定
     if (status !== 'past') {
       const isBooked = bookings.some((booking: any) => {
         if (booking.roomId !== roomId) return false;
@@ -571,7 +549,6 @@ const generateTimeSlots = (roomId: number, bookings: any[], date: string) => {
   return slots;
 };
 
-// 加载用户列表
 const loadUserList = async () => {
   userLoading.value = true;
   try {
@@ -609,6 +586,31 @@ const onDateChange = () => {
 
 const disabledDate = (current: Date) => {
   return dayjs(current).isBefore(dayjs().startOf('day'));
+};
+
+// ==================== 推荐卡片选择 ====================
+const onRecommendSelect = (roomId: number) => {
+  // 找到对应的会议室并滚动到视图
+  const room = filteredRoomList.value.find(r => r.id === roomId);
+  if (room) {
+    // 可选：高亮该会议室行
+    Message.info(`已定位到会议室: ${room.roomName}`);
+    // 滚动到对应行
+    const roomElement = document.querySelector(`.room-row[data-room-id="${roomId}"]`);
+    if (roomElement) {
+      roomElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  } else {
+    // 如果当前筛选条件下找不到该会议室，清除筛选
+    Message.info('该会议室可能被筛选条件过滤，已重置筛选');
+    onReset();
+    setTimeout(() => {
+      const roomElement = document.querySelector(`.room-row[data-room-id="${roomId}"]`);
+      if (roomElement) {
+        roomElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
+  }
 };
 
 // ==================== 方格选择逻辑 ====================
@@ -847,18 +849,14 @@ onMounted(() => {
 <style scoped lang="less">
 #homeView {
   padding: 20px;
-  height: calc(100vh - 84px);
-  display: flex;
-  flex-direction: column;
+  min-height: 100vh;
 
   .filter-card {
     margin-bottom: 16px;
-    flex-shrink: 0;
   }
 
   .date-card {
     margin-bottom: 16px;
-    flex-shrink: 0;
 
     .legend {
       display: flex;
@@ -893,7 +891,8 @@ onMounted(() => {
   }
 
   .room-grid-container {
-    flex: 1;
+    height: calc(100vh - 380px);
+    min-height: 400px;
     overflow-y: auto;
     border: 1px solid var(--color-border-2);
     border-radius: 4px;
