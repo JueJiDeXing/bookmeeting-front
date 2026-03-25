@@ -1,5 +1,9 @@
 <template>
   <div id="homeView">
+
+    <!-- 智能推荐卡片 -->
+    <RecommendCard @select-room="onRecommendSelect" />
+
     <!-- 筛选卡片 -->
     <a-card class="filter-card">
       <a-row :gutter="18">
@@ -84,9 +88,6 @@
       </a-row>
     </a-card>
 
-    <!-- 智能推荐卡片（独立区域，不参与flex布局） -->
-    <RecommendCard @select-room="onRecommendSelect" />
-
     <!-- 日期选择 + 刷新 -->
     <a-card class="date-card">
       <a-row :gutter="16" align="center">
@@ -144,6 +145,7 @@
           :key="room.id"
           class="room-row"
           :class="{ 'is-selecting': selectingRoomId === room.id }"
+          :data-room-id="room.id"
       >
         <!-- 会议室信息 -->
         <div class="room-info">
@@ -171,7 +173,7 @@
           </a-space>
         </div>
 
-        <!-- 时间方格条 -->
+        <!-- 时间方格条（24个方格：8:00-20:00） -->
         <div
             class="time-slots"
             @mousedown="startSelection($event, room.id)"
@@ -322,9 +324,9 @@ const buildingLoading = ref(false);
 
 // 时间配置
 const START_HOUR = 8;
-const END_HOUR = 24;
-const TOTAL_SLOTS = (END_HOUR - START_HOUR) * 2;
-const slotWidth = 35;
+const END_HOUR = 20;
+const TOTAL_SLOTS = (END_HOUR - START_HOUR) * 2;  // 24个格子（8:00-20:00）
+const slotWidth = 40;
 
 // 搜索参数
 const searchParams = reactive({
@@ -337,14 +339,15 @@ const searchParams = reactive({
   pageSize: 100
 });
 
-// 生成时间刻度标签
+// 生成时间刻度标签（8:00 - 20:00）
 const timeSlots = computed(() => {
   const slots = [];
   for (let hour = START_HOUR; hour < END_HOUR; hour++) {
     slots.push({ hour, minute: 0, label: `${hour.toString().padStart(2, '0')}:00` });
     slots.push({ hour, minute: 30, label: `${hour.toString().padStart(2, '0')}:30` });
   }
-  slots.push({ hour: 24, minute: 0, label: '24:00' });
+  // 最后一个时间点 20:00
+  slots.push({ hour: 20, minute: 0, label: '20:00' });
   return slots;
 });
 
@@ -387,7 +390,13 @@ const selectedTimeRange = computed(() => {
   const first = selectedIndices[0];
   const last = selectedIndices[selectedIndices.length - 1];
   const startSlot = timeSlots.value[first];
-  const endSlot = timeSlots.value[last + 1] || timeSlots.value[last];
+  // 结束时间：如果是最后一个格子，结束时间为20:00；否则取下个格子
+  let endSlot;
+  if (last === TOTAL_SLOTS - 1) {
+    endSlot = { hour: 20, minute: 0 };
+  } else {
+    endSlot = timeSlots.value[last + 1];
+  }
 
   return `${startSlot.label} - ${endSlot.label}`;
 });
@@ -482,6 +491,7 @@ const loadRoomList = async () => {
 
     const rooms = roomRes.data.records || [];
 
+    // 获取当天8:00-20:00的预定记录
     const startOfDay = dayjs(selectedDate.value).hour(START_HOUR).minute(0).second(0).format('YYYY-MM-DD HH:mm:ss');
     const endOfDay = dayjs(selectedDate.value).hour(END_HOUR).minute(0).second(0).format('YYYY-MM-DD HH:mm:ss');
 
@@ -515,18 +525,21 @@ const generateTimeSlots = (roomId: number, bookings: any[], date: string) => {
     const minute = i % 2 === 0 ? 0 : 30;
 
     let slotTime;
-    if (hour === 24) {
-      slotTime = dayjs(date).add(1, 'day').startOf('day');
+    // 最后一个格子是20:00
+    if (hour === END_HOUR) {
+      slotTime = dayjs(date).hour(END_HOUR).minute(0).second(0);
     } else {
       slotTime = dayjs(date).hour(hour).minute(minute).second(0);
     }
 
     let status = 'available';
 
+    // 判断是否已过去（只对今天的日期判断）
     if (date === now.format('YYYY-MM-DD') && slotTime.isBefore(now)) {
       status = 'past';
     }
 
+    // 判断是否被预定
     if (status !== 'past') {
       const isBooked = bookings.some((booking: any) => {
         if (booking.roomId !== roomId) return false;
@@ -590,18 +603,14 @@ const disabledDate = (current: Date) => {
 
 // ==================== 推荐卡片选择 ====================
 const onRecommendSelect = (roomId: number) => {
-  // 找到对应的会议室并滚动到视图
   const room = filteredRoomList.value.find(r => r.id === roomId);
   if (room) {
-    // 可选：高亮该会议室行
     Message.info(`已定位到会议室: ${room.roomName}`);
-    // 滚动到对应行
     const roomElement = document.querySelector(`.room-row[data-room-id="${roomId}"]`);
     if (roomElement) {
       roomElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   } else {
-    // 如果当前筛选条件下找不到该会议室，清除筛选
     Message.info('该会议室可能被筛选条件过滤，已重置筛选');
     onReset();
     setTimeout(() => {
@@ -783,7 +792,7 @@ const handleBooking = async () => {
   const startSlot = timeSlots.value[firstIdx];
   let endSlot;
   if (lastIdx === TOTAL_SLOTS - 1) {
-    endSlot = { hour: 24, minute: 0 };
+    endSlot = { hour: END_HOUR, minute: 0 };
   } else {
     endSlot = timeSlots.value[lastIdx + 1];
   }
@@ -794,8 +803,8 @@ const handleBooking = async () => {
       .second(0);
 
   let endTime;
-  if (endSlot.hour === 24) {
-    endTime = dayjs(selectedDate.value).add(1, 'day').startOf('day');
+  if (endSlot.hour === END_HOUR && endSlot.minute === 0) {
+    endTime = dayjs(selectedDate.value).hour(END_HOUR).minute(0).second(0);
   } else {
     endTime = dayjs(selectedDate.value)
         .hour(endSlot.hour)
@@ -920,7 +929,6 @@ onMounted(() => {
 
         .time-slot-label {
           flex-shrink: 0;
-          width: 32px;
           text-align: center;
           font-size: 11px;
           color: var(--color-text-3);
@@ -969,7 +977,6 @@ onMounted(() => {
 
         .time-slot {
           flex-shrink: 0;
-          width: 32px;
           height: 80px;
           border-right: 1px solid var(--color-border-2);
           border-bottom: 1px solid var(--color-border-2);

@@ -1,3 +1,4 @@
+<!-- views/admin/BookingStatistics.vue -->
 <template>
   <div id="bookingStatisticsView">
     <!-- 操作按钮区域 -->
@@ -7,7 +8,7 @@
           <template #icon><icon-arrow-left /></template>
           返回预定列表
         </a-button>
-        <a-button type="primary" @click="onExport">
+        <a-button type="primary" @click="onExport" :loading="exportLoading">
           <template #icon><icon-download /></template>
           导出报表
         </a-button>
@@ -18,6 +19,7 @@
     <a-card class="filter-card">
       <a-space size="large" wrap>
         <a-radio-group v-model="timeRange" type="button" @change="onTimeRangeChange">
+          <a-radio value="day">今日</a-radio>
           <a-radio value="week">本周</a-radio>
           <a-radio value="month">本月</a-radio>
           <a-radio value="quarter">本季度</a-radio>
@@ -29,7 +31,8 @@
             v-if="timeRange === 'custom'"
             v-model="customDateRange"
             @change="loadData"
-            style="width: 240px"
+            style="width: 260px"
+            show-time
         />
       </a-space>
     </a-card>
@@ -37,50 +40,50 @@
     <!-- 统计卡片 -->
     <a-row :gutter="16" class="stat-cards">
       <a-col :span="6">
-        <a-card class="stat-card">
+        <a-card class="stat-card" hoverable>
           <template #title>
             <icon-calendar />
             总预定次数
           </template>
-          <div class="stat-number">{{ statistics.totalBookings }}</div>
+          <div class="stat-number">{{ statistics.totalBookings || 0 }}</div>
           <div class="stat-trend" :class="{ up: statistics.bookingTrend > 0, down: statistics.bookingTrend < 0 }">
             <icon-caret-up v-if="statistics.bookingTrend > 0" />
             <icon-caret-down v-if="statistics.bookingTrend < 0" />
-            {{ Math.abs(statistics.bookingTrend) }}% 较上期
+            {{ Math.abs(statistics.bookingTrend || 0) }}% 较上期
           </div>
         </a-card>
       </a-col>
 
       <a-col :span="6">
-        <a-card class="stat-card">
+        <a-card class="stat-card" hoverable>
           <template #title>
             <icon-clock-circle />
             总会议时长
           </template>
-          <div class="stat-number">{{ statistics.totalHours }}小时</div>
-          <div class="stat-desc">平均 {{ statistics.avgHoursPerBooking }}小时/场</div>
+          <div class="stat-number">{{ statistics.totalHours || 0 }}小时</div>
+          <div class="stat-desc">平均 {{ statistics.avgHoursPerBooking || 0 }}小时/场</div>
         </a-card>
       </a-col>
 
       <a-col :span="6">
-        <a-card class="stat-card">
+        <a-card class="stat-card" hoverable>
           <template #title>
             <icon-user />
             参会总人次
           </template>
-          <div class="stat-number">{{ statistics.totalAttendees }}</div>
-          <div class="stat-desc">平均 {{ statistics.avgAttendeesPerBooking }}人/场</div>
+          <div class="stat-number">{{ statistics.totalAttendees || 0 }}</div>
+          <div class="stat-desc">平均 {{ statistics.avgAttendeesPerBooking || 0 }}人/场</div>
         </a-card>
       </a-col>
 
       <a-col :span="6">
-        <a-card class="stat-card">
+        <a-card class="stat-card" hoverable>
           <template #title>
-            <icon-percent />
+            <icon-home />
             会议室使用率
           </template>
-          <div class="stat-number">{{ statistics.utilizationRate }}%</div>
-          <div class="stat-desc">高峰期: {{ statistics.peakHours }}</div>
+          <div class="stat-number">{{ statistics.utilizationRate || 0 }}%</div>
+          <div class="stat-desc">高峰期: {{ statistics.peakHours || '-' }}</div>
         </a-card>
       </a-col>
     </a-row>
@@ -88,39 +91,41 @@
     <!-- 图表区域 -->
     <a-row :gutter="16" class="chart-row">
       <a-col :span="12">
-        <a-card title="会议室使用排行">
-          <div id="roomRankChart" style="height: 300px"></div>
+        <a-card title="会议室使用排行" :bordered="false">
+          <div id="roomRankChart" style="height: 320px"></div>
         </a-card>
       </a-col>
 
       <a-col :span="12">
-        <a-card title="时间段热度分布">
-          <div id="timeHeatChart" style="height: 300px"></div>
+        <a-card title="时间段热度分布" :bordered="false">
+          <div id="timeHeatChart" style="height: 320px"></div>
         </a-card>
       </a-col>
     </a-row>
 
     <a-row :gutter="16" class="chart-row">
       <a-col :span="12">
-        <a-card title="每日预定趋势">
-          <div id="dailyTrendChart" style="height: 300px"></div>
+        <a-card title="每日预定趋势" :bordered="false">
+          <div id="dailyTrendChart" style="height: 320px"></div>
         </a-card>
       </a-col>
 
       <a-col :span="12">
-        <a-card title="预定人排行">
-          <div id="userRankChart" style="height: 300px"></div>
+        <a-card title="预定人排行" :bordered="false">
+          <div id="userRankChart" style="height: 320px"></div>
         </a-card>
       </a-col>
     </a-row>
 
     <!-- 详细数据表格 -->
-    <a-card title="会议室使用详情" class="detail-table">
+    <a-card title="会议室使用详情" class="detail-table" :bordered="false">
       <a-table
           :columns="roomColumns"
           :data="roomDetailList"
           :pagination="false"
           :loading="loading"
+          :bordered="false"
+          stripe
       >
         <template #columns>
           <a-table-column title="会议室" data-index="roomName" />
@@ -129,7 +134,9 @@
             <template #cell="{ record }">{{ record.totalHours }}小时</template>
           </a-table-column>
           <a-table-column title="使用率" data-index="utilizationRate" sortable>
-            <template #cell="{ record }">{{ record.utilizationRate }}%</template>
+            <template #cell="{ record }">
+              <a-progress :percent="record.utilizationRate" :width="60" size="small" />
+            </template>
           </a-table-column>
           <a-table-column title="最常用时间段" data-index="peakTime" />
         </template>
@@ -139,7 +146,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, nextTick } from 'vue';
+import { ref, reactive, onMounted, onUnmounted } from 'vue';
 import { Message } from '@arco-design/web-vue';
 import {
   IconArrowLeft,
@@ -148,35 +155,35 @@ import {
   IconClockCircle,
   IconUser,
   IconCaretUp,
-  IconCaretDown
+  IconCaretDown,
+  IconHome
 } from '@arco-design/web-vue/es/icon';
 import { useRouter } from 'vue-router';
 import * as echarts from 'echarts';
+import dayjs from 'dayjs';
+
+import { AdminStatisticsControllerService } from '/generated';
+import type { StatisticsVO, RoomRankData, TimeHeatData, TrendData, UserRankData, RoomDetailData } from '/generated';
 
 const router = useRouter();
 const loading = ref(false);
+const exportLoading = ref(false);
 const timeRange = ref('month');
-const customDateRange = ref([]);
+const customDateRange = ref<dayjs.Dayjs[]>([]);
 
 // 统计数据
-const statistics = ref({
-  totalBookings: 128,
-  bookingTrend: 12.5,
-  totalHours: 356,
-  avgHoursPerBooking: 2.8,
-  totalAttendees: 856,
-  avgAttendeesPerBooking: 6.7,
-  utilizationRate: 68,
-  peakHours: '14:00-16:00'
-});
+const statistics = ref<StatisticsVO['overview']>({});
+const roomRankList = ref<RoomRankData[]>([]);
+const timeHeatList = ref<TimeHeatData[]>([]);
+const dailyTrendList = ref<TrendData[]>([]);
+const userRankList = ref<UserRankData[]>([]);
+const roomDetailList = ref<RoomDetailData[]>([]);
 
-// 会议室详情列表
-const roomDetailList = ref([
-  { roomName: '第一会议室', bookingCount: 45, totalHours: 112, utilizationRate: 75, peakTime: '10:00-12:00' },
-  { roomName: '第二会议室', bookingCount: 38, totalHours: 95, utilizationRate: 63, peakTime: '14:00-16:00' },
-  { roomName: '第三会议室', bookingCount: 32, totalHours: 82, utilizationRate: 55, peakTime: '09:00-11:00' },
-  { roomName: '第四会议室', bookingCount: 28, totalHours: 67, utilizationRate: 45, peakTime: '15:00-17:00' }
-]);
+// ECharts 实例
+let roomRankChart: echarts.ECharts | null = null;
+let timeHeatChart: echarts.ECharts | null = null;
+let dailyTrendChart: echarts.ECharts | null = null;
+let userRankChart: echarts.ECharts | null = null;
 
 // 表格列
 const roomColumns = [
@@ -187,79 +194,152 @@ const roomColumns = [
   { title: '最常用时间段', dataIndex: 'peakTime' }
 ];
 
+// 加载数据
+const loadData = async () => {
+  loading.value = true;
+  try {
+    const request: any = { type: timeRange.value };
+
+    if (timeRange.value === 'custom' && customDateRange.value.length === 2) {
+      request.startTime = customDateRange.value[0].format('YYYY-MM-DD HH:mm:ss');
+      request.endTime = customDateRange.value[1].format('YYYY-MM-DD HH:mm:ss');
+    }
+
+    const res = await AdminStatisticsControllerService.getStatisticsUsingPost(request);
+
+    if (res.code === 0 && res.data) {
+      statistics.value = res.data.overview || {};
+      roomRankList.value = res.data.roomRank || [];
+      timeHeatList.value = res.data.timeHeat || [];
+      dailyTrendList.value = res.data.dailyTrend || [];
+      userRankList.value = res.data.userRank || [];
+      roomDetailList.value = res.data.roomDetails || [];
+
+      updateCharts();
+    } else {
+      Message.error(res.message || '加载失败');
+    }
+  } catch (error: any) {
+    Message.error('加载失败: ' + error.message);
+  } finally {
+    loading.value = false;
+  }
+};
+
 // 初始化图表
 const initCharts = () => {
-  nextTick(() => {
-    // 会议室使用排行
-    const roomChart = echarts.init(document.getElementById('roomRankChart'));
-    roomChart.setOption({
-      tooltip: { trigger: 'axis' },
-      xAxis: { type: 'category', data: ['第一会议室', '第二会议室', '第三会议室', '第四会议室'] },
-      yAxis: { type: 'value', name: '使用次数' },
+  const roomChartDom = document.getElementById('roomRankChart');
+  const timeChartDom = document.getElementById('timeHeatChart');
+  const dailyChartDom = document.getElementById('dailyTrendChart');
+  const userChartDom = document.getElementById('userRankChart');
+
+  if (roomChartDom) {
+    roomRankChart = echarts.init(roomChartDom);
+  }
+  if (timeChartDom) {
+    timeHeatChart = echarts.init(timeChartDom);
+  }
+  if (dailyChartDom) {
+    dailyTrendChart = echarts.init(dailyChartDom);
+  }
+  if (userChartDom) {
+    userRankChart = echarts.init(userChartDom);
+  }
+
+  window.addEventListener('resize', handleResize);
+};
+
+// 更新图表
+const updateCharts = () => {
+  // 会议室使用排行
+  if (roomRankChart && roomRankList.value.length > 0) {
+    roomRankChart.setOption({
+      tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+      grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+      xAxis: { type: 'value', name: '使用次数' },
+      yAxis: {
+        type: 'category',
+        data: roomRankList.value.map(item => item.roomName),
+        axisLabel: { rotate: 0 }
+      },
       series: [{
-        data: [45, 38, 32, 28],
+        data: roomRankList.value.map(item => item.bookingCount),
         type: 'bar',
-        itemStyle: { color: '#165DFF' }
+        itemStyle: { color: '#165DFF', borderRadius: [0, 4, 4, 0] }
       }]
     });
+  }
 
-    // 时间段热度分布
-    const timeChart = echarts.init(document.getElementById('timeHeatChart'));
-    timeChart.setOption({
+  // 时间段热度分布
+  if (timeHeatChart && timeHeatList.value.length > 0) {
+    timeHeatChart.setOption({
       tooltip: { trigger: 'axis' },
+      grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
       xAxis: {
         type: 'category',
-        data: ['09-10', '10-11', '11-12', '14-15', '15-16', '16-17', '17-18']
+        data: timeHeatList.value.map(item => item.timeSlot),
+        axisLabel: { rotate: 45 }
       },
       yAxis: { type: 'value', name: '预定次数' },
       series: [{
-        data: [12, 25, 18, 32, 28, 15, 8],
+        data: timeHeatList.value.map(item => item.count),
         type: 'line',
         smooth: true,
-        areaStyle: { color: 'rgba(22, 93, 255, 0.1)' }
+        areaStyle: { color: 'rgba(22, 93, 255, 0.1)' },
+        lineStyle: { color: '#165DFF', width: 2 },
+        symbol: 'circle',
+        symbolSize: 6
       }]
     });
+  }
 
-    // 每日趋势
-    const dailyChart = echarts.init(document.getElementById('dailyTrendChart'));
-    dailyChart.setOption({
+  // 每日预定趋势
+  if (dailyTrendChart && dailyTrendList.value.length > 0) {
+    dailyTrendChart.setOption({
       tooltip: { trigger: 'axis' },
+      grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
       xAxis: {
         type: 'category',
-        data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+        data: dailyTrendList.value.map(item => item.date),
+        axisLabel: { rotate: 45, interval: Math.floor(dailyTrendList.value.length / 10) }
       },
       yAxis: { type: 'value', name: '预定次数' },
       series: [{
-        data: [18, 22, 25, 20, 15, 8, 5],
+        data: dailyTrendList.value.map(item => item.count),
         type: 'line',
-        smooth: true
+        smooth: true,
+        lineStyle: { color: '#722ED1', width: 2 },
+        areaStyle: { color: 'rgba(114, 46, 209, 0.1)' }
       }]
     });
+  }
 
-    // 预定人排行
-    const userChart = echarts.init(document.getElementById('userRankChart'));
-    userChart.setOption({
-      tooltip: { trigger: 'axis' },
-      xAxis: {
+  // 预定人排行
+  if (userRankChart && userRankList.value.length > 0) {
+    userRankChart.setOption({
+      tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+      grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+      xAxis: { type: 'value', name: '预定次数' },
+      yAxis: {
         type: 'category',
-        data: ['张三', '李四', '王五', '赵六', '钱七']
+        data: userRankList.value.slice(0, 10).map(item => item.userName || item.userAccount),
+        axisLabel: { rotate: 0 }
       },
-      yAxis: { type: 'value', name: '预定次数' },
       series: [{
-        data: [28, 22, 18, 15, 12],
+        data: userRankList.value.slice(0, 10).map(item => item.bookingCount),
         type: 'bar',
-        itemStyle: { color: '#722ED1' }
+        itemStyle: { color: '#F7BA1E', borderRadius: [0, 4, 4, 0] }
       }]
     });
+  }
+};
 
-    // 窗口大小变化自适应
-    window.addEventListener('resize', () => {
-      roomChart.resize();
-      timeChart.resize();
-      dailyChart.resize();
-      userChart.resize();
-    });
-  });
+// 窗口大小变化
+const handleResize = () => {
+  roomRankChart?.resize();
+  timeHeatChart?.resize();
+  dailyTrendChart?.resize();
+  userRankChart?.resize();
 };
 
 // 时间范围变化
@@ -269,38 +349,51 @@ const onTimeRangeChange = () => {
   }
 };
 
-// 加载数据
-const loadData = async () => {
-  loading.value = true;
+// 导出报表
+const onExport = async () => {
+  exportLoading.value = true;
   try {
-    // TODO: 调用统计接口
-    // const res = await StatisticsControllerService.getBookingStatisticsUsingGet({
-    //   timeRange: timeRange.value,
-    //   startDate: customDateRange.value?.[0],
-    //   endDate: customDateRange.value?.[1]
-    // });
-    // if (res.code === 0) {
-    //   statistics.value = res.data.statistics;
-    //   roomDetailList.value = res.data.roomDetails;
-    //   更新图表数据...
-    // }
-    Message.success('数据加载成功');
-  } catch (error) {
-    Message.error('加载失败: ' + error.message);
+    const request: any = { type: timeRange.value };
+
+    if (timeRange.value === 'custom' && customDateRange.value.length === 2) {
+      request.startTime = customDateRange.value[0].format('YYYY-MM-DD HH:mm:ss');
+      request.endTime = customDateRange.value[1].format('YYYY-MM-DD HH:mm:ss');
+    }
+
+    // 创建隐藏链接下载
+    const response = await AdminStatisticsControllerService.exportStatisticsUsingPost(request, {
+      responseType: 'blob'
+    });
+
+    const blob = new Blob([response as any], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.setAttribute('download', `statistics_${dayjs().format('YYYYMMDD_HHmmss')}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    Message.success('导出成功');
+  } catch (error: any) {
+    Message.error('导出失败: ' + error.message);
   } finally {
-    loading.value = false;
+    exportLoading.value = false;
   }
 };
 
-// 导出报表
-const onExport = () => {
-  Message.info('正在导出报表...');
-  // TODO: 调用导出接口
-};
-
 onMounted(() => {
-  loadData();
   initCharts();
+  loadData();
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize);
+  roomRankChart?.dispose();
+  timeHeatChart?.dispose();
+  dailyTrendChart?.dispose();
+  userRankChart?.dispose();
 });
 </script>
 
@@ -311,7 +404,7 @@ onMounted(() => {
   .operation-bar {
     margin-bottom: 20px;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
   }
 
   .filter-card {
@@ -322,6 +415,20 @@ onMounted(() => {
     margin-bottom: 20px;
 
     .stat-card {
+      text-align: center;
+      transition: all 0.2s;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      :deep(.arco-card__title) {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+      }
+
       .stat-number {
         font-size: 32px;
         font-weight: 600;
