@@ -14,7 +14,6 @@ export type RecommendRoomVO = {
     floor?: number;
     historyMatch?: number;
     id?: number;
-    imageUrl?: string;
     locationDesc?: string;
     matchReason?: string;
     roomName?: string;

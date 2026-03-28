@@ -3,7 +3,6 @@
 /* tslint:disable */
 /* eslint-disable */
 export type LoginUserVO = {
-    avatar?: string;
     createTime?: string;
     id?: number;
     role?: string;

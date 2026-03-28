@@ -88,13 +88,6 @@
             <a-tag color="arcoblue">{{ record.categoryName || '未分类' }}</a-tag>
           </template>
         </a-table-column>
-        <a-table-column title="图标" data-index="icon" :width="80">
-          <template #cell="{ record }">
-            <img v-if="record.icon" :src="record.icon" alt="icon"
-                 style="width: 32px; height: 32px; object-fit: contain"/>
-            <span v-else>-</span>
-          </template>
-        </a-table-column>
         <a-table-column title="状态" data-index="status" :width="100">
           <template #cell="{ record }">
             <a-tag :color="record.status === 0 ? 'green' : 'red'">
@@ -198,9 +191,6 @@
               {{ item.categoryName }}
             </a-option>
           </a-select>
-        </a-form-item>
-        <a-form-item field="icon" label="设备图标">
-          <a-input v-model="formData.icon" placeholder="请输入图标URL"/>
         </a-form-item>
         <a-form-item field="status" label="状态">
           <a-radio-group v-model="formData.status" type="button">
@@ -364,8 +354,7 @@ const columns = [
   {title: '设备ID', dataIndex: 'id', width: 80},
   {title: '设备名称', dataIndex: 'equipmentName', width: 150},
   {title: '设备代码', dataIndex: 'equipmentCode', width: 120},
-  {title: '分类', width: 100, slotName: 'category'},  // ✅ 新增
-  {title: '图标', dataIndex: 'icon', width: 80, slotName: 'icon'},
+  {title: '分类', width: 100, slotName: 'category'},
   {title: '状态', dataIndex: 'status', width: 100, slotName: 'status'},
   {title: '所在会议室', width: 150, slotName: 'currentRoom'},
   {title: '创建时间', dataIndex: 'createTime', width: 180},
@@ -562,7 +551,6 @@ const formData = reactive<EquipmentAddRequest & { id?: number }>({
   equipmentName: '',
   equipmentCode: '',
   categoryId: undefined,  // ✅ 新增
-  icon: '',
   status: 0
 });
 
@@ -589,7 +577,6 @@ const onAdd = () => {
     equipmentName: '',
     equipmentCode: '',
     categoryId: undefined,  // ✅ 新增
-    icon: '',
     status: 0
   });
   modalVisible.value = true;
@@ -604,7 +591,6 @@ const onEdit = (record: EquipmentVO) => {
     equipmentName: record.equipmentName,
     equipmentCode: record.equipmentCode,
     categoryId: record.categoryId,  // ✅ 新增
-    icon: record.icon,
     status: record.status
   });
   modalVisible.value = true;
@@ -635,7 +621,6 @@ const handleModalOk = async () => {
           equipmentName: formData.equipmentName,
           equipmentCode: formData.equipmentCode,
           categoryId: formData.categoryId,  // ✅ 新增
-          icon: formData.icon,
           status: formData.status
         };
         res = await AdminEquipmentControllerService.updateEquipmentUsingPost(updateData);

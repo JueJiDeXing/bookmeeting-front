@@ -9,7 +9,6 @@ export type MeetingRoom = {
     description?: string;
     floor?: number;
     id?: number;
-    imageUrl?: string;
     isDelete?: number;
     locationDesc?: string;
     roomName?: string;

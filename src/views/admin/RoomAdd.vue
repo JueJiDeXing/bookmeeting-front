@@ -55,13 +55,6 @@
           />
         </a-form-item>
 
-        <a-form-item field="imageUrl" label="会议室图片">
-          <a-input v-model="formData.imageUrl" placeholder="请输入图片URL" />
-          <div v-if="formData.imageUrl" class="image-preview">
-            <img :src="formData.imageUrl" alt="会议室预览" @error="handleImageError" />
-          </div>
-        </a-form-item>
-
         <a-form-item field="equipmentIds" label="设备配置">
           <a-select
               v-model="formData.equipmentIds"
@@ -149,7 +142,6 @@ const formData = reactive<RoomAddRequest & { id?: number }>({
   roomNumber: '',
   capacity: undefined,
   description: '',
-  imageUrl: '',
   status: 0,
   equipmentIds: []
 });
@@ -216,7 +208,6 @@ const loadRoomInfo = async (id: number) => {
         roomNumber: room.roomNumber,
         capacity: room.capacity,
         description: room.description,
-        imageUrl: room.imageUrl,
         status: room.status,
         equipmentIds: room.equipmentList?.map((e: Equipment) => e.id) || []
       });
@@ -226,12 +217,6 @@ const loadRoomInfo = async (id: number) => {
   } catch (error: any) {
     Message.error('加载会议室信息失败: ' + error.message);
   }
-};
-
-// 图片加载失败处理
-const handleImageError = (e: Event) => {
-  const img = e.target as HTMLImageElement;
-  img.src = 'https://via.placeholder.com/400x200?text=No+Image';
 };
 
 // 返回上一页
@@ -258,7 +243,6 @@ const handleSubmit = async () => {
         roomNumber: formData.roomNumber,
         capacity: formData.capacity,
         description: formData.description,
-        imageUrl: formData.imageUrl,
         status: formData.status,
         equipmentIds: formData.equipmentIds
       };
@@ -277,7 +261,6 @@ const handleSubmit = async () => {
         roomNumber: formData.roomNumber,
         capacity: formData.capacity!,
         description: formData.description,
-        imageUrl: formData.imageUrl,
         status: formData.status,
         equipmentIds: formData.equipmentIds
       };
@@ -330,20 +313,6 @@ onMounted(() => {
   .location-group {
     :deep(.arco-form-item) {
       margin-bottom: 0;
-    }
-  }
-
-  .image-preview {
-    margin-top: 12px;
-    padding: 8px;
-    border: 1px dashed var(--color-border-2);
-    border-radius: 4px;
-    max-width: 400px;
-
-    img {
-      max-width: 100%;
-      max-height: 200px;
-      border-radius: 4px;
     }
   }
 }

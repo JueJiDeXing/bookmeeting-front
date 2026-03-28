@@ -62,22 +62,6 @@
             </span>
           </a-space>
         </a-card>
-
-        <!-- 会议室图片 -->
-        <a-card class="image-card" :bordered="false">
-          <template #title>
-            <a-space>
-              <icon-image />
-              <span>会议室图片</span>
-            </a-space>
-          </template>
-          <div class="room-image">
-            <img
-                :src="roomInfo?.imageUrl || 'https://via.placeholder.com/800x400?text=No+Image'"
-                alt="room"
-            />
-          </div>
-        </a-card>
       </a-col>
 
       <!-- 右侧：预定表单 -->
@@ -551,22 +535,13 @@ onMounted(() => {
 #roomDetailView {
   padding: 20px;
 
-  .info-card, .image-card, .booking-card, .bookings-card {
+  .info-card, .booking-card, .bookings-card {
     margin-bottom: 20px;
   }
 
   .room-desc {
     color: var(--color-text-2);
     line-height: 1.8;
-  }
-
-  .room-image {
-    img {
-      width: 100%;
-      max-height: 400px;
-      object-fit: cover;
-      border-radius: 4px;
-    }
   }
 
   .no-equipment {

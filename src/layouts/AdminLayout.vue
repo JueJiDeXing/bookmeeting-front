@@ -59,8 +59,11 @@
         <a-layout-header style="padding-left: 20px; display: flex; justify-content: space-between; align-items: center;">
           <div>欢迎使用会议室预定系统</div>
           <a-space>
-            <a-avatar :size="32">
-              <img src="@/assets/default-avatar.png" alt="avatar" />
+            <a-avatar
+                :size="40"
+                :style="{ backgroundColor: '#14a9f8'}"
+            >
+              {{ store.state.user.loginUser.userName?.charAt(0) }}
             </a-avatar>
             <a-dropdown @select="handleUserMenu">
               <a-button type="text">

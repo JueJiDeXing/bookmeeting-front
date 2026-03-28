@@ -8,7 +8,6 @@ export default {
     state: () => ({
         loginUser: {
             userName: "未登录",
-            avatar: "",
             role: AccessEnum.NOT_LOGIN
         }
     }),
@@ -25,14 +24,13 @@ export default {
                 } else {
                     commit('updateUser', {
                         userName: "未登录",
-                        avatar: "",
                         role: AccessEnum.NOT_LOGIN
                     });
                     return null;
                 }
             } catch (error) {
                 console.error('获取登录用户信息失败:', error);
-                commit('updateUser', {userName: "未登录", avatar: "", role: AccessEnum.NOT_LOGIN});
+                commit('updateUser', {userName: "未登录", role: AccessEnum.NOT_LOGIN});
                 return null;
             }
         }
@@ -41,9 +39,6 @@ export default {
     mutations: {
         updateUser(state, User) {
             state.loginUser = User
-        },
-        setavatar(state, avatar) {
-            state.loginUser.avatar = avatar;
         }
     },
 } as StoreOptions<any>;

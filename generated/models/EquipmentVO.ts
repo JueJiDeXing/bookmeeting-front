@@ -10,7 +10,6 @@ export type EquipmentVO = {
     currentRoom?: MeetingRoom;
     equipmentCode?: string;
     equipmentName?: string;
-    icon?: string;
     id?: number;
     inUse?: boolean;
     status?: number;

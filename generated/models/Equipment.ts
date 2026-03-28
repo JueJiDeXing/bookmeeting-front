@@ -7,7 +7,6 @@ export type Equipment = {
     createTime?: string;
     equipmentCode?: string;
     equipmentName?: string;
-    icon?: string;
     id?: number;
     isDelete?: number;
     status?: number;

@@ -9,24 +9,6 @@
       </template>
 
       <a-row :gutter="24">
-        <a-col :span="8">
-          <a-space direction="vertical" align="center" fill>
-            <a-avatar :size="100" shape="square">
-              <img :src="userInfo.avatar || 'https://avatars.githubusercontent.com/u/1?v=4'" />
-            </a-avatar>
-            <a-upload
-                action="/api/user/avatar"
-                :show-file-list="false"
-                @success="onAvatarUploadSuccess"
-            >
-              <a-button type="primary" size="small">
-                <icon-upload />
-                上传头像
-              </a-button>
-            </a-upload>
-          </a-space>
-        </a-col>
-
         <a-col :span="16">
           <a-form :model="userInfo" :rules="formRules" ref="formRef" :label-col-props="{ span: 4 }">
             <a-form-item field="userName" label="用户名称">
@@ -83,7 +65,6 @@ const userInfo = reactive({
   id: undefined,
   userAccount: '',
   userName: '',
-  avatar: '',
   email: '',
   phone: '',
   role: 'user',
@@ -159,12 +140,6 @@ const handleUpdate = async () => {
   } finally {
     updating.value = false;
   }
-};
-
-// 头像上传成功
-const onAvatarUploadSuccess = () => {
-  Message.success('头像上传成功');
-  loadUserInfo(); // 重新加载信息
 };
 
 onMounted(() => {

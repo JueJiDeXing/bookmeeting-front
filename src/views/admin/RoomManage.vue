@@ -177,9 +177,6 @@
         <a-form-item field="description" label="会议室描述">
           <a-textarea v-model="formData.description" placeholder="请输入会议室描述" :max-length="500" show-word-limit :auto-size="{ minRows: 3, maxRows: 5 }" />
         </a-form-item>
-        <a-form-item field="imageUrl" label="会议室图片">
-          <a-input v-model="formData.imageUrl" placeholder="请输入图片URL" />
-        </a-form-item>
 
         <!-- 设备选择区域 - 增加筛选功能 -->
         <a-form-item label="设备筛选">
@@ -725,7 +722,6 @@ const formData = reactive<RoomAddRequest & { id?: number }>({
   roomNumber: '',
   capacity: undefined,
   description: '',
-  imageUrl: '',
   status: 0,
   equipmentIds: []
 });
@@ -765,7 +761,6 @@ const onAdd = () => {
     roomNumber: '',
     capacity: undefined,
     description: '',
-    imageUrl: '',
     status: 0,
     equipmentIds: []
   });
@@ -788,7 +783,6 @@ const onEdit = (record: RoomVO) => {
     roomNumber: record.roomNumber,
     capacity: record.capacity,
     description: record.description,
-    imageUrl: record.imageUrl,
     status: record.status,
     equipmentIds: record.equipmentList?.map((e: Equipment) => e.id!) || []
   });
@@ -818,7 +812,6 @@ const handleModalOk = async () => {
         roomNumber: formData.roomNumber,
         capacity: formData.capacity!,
         description: formData.description,
-        imageUrl: formData.imageUrl,
         status: formData.status,
         equipmentIds: formData.equipmentIds
       };
@@ -832,7 +825,6 @@ const handleModalOk = async () => {
         roomNumber: formData.roomNumber,
         capacity: formData.capacity,
         description: formData.description,
-        imageUrl: formData.imageUrl,
         status: formData.status,
         equipmentIds: formData.equipmentIds
       };

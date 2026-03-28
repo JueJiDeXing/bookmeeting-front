@@ -11,7 +11,6 @@ export type RoomVO = {
     equipmentList?: Array<Equipment>;
     floor?: number;
     id?: number;
-    imageUrl?: string;
     locationDesc?: string;
     roomName?: string;
     roomNumber?: string;

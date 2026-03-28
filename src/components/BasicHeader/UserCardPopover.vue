@@ -10,7 +10,6 @@
       <div class="user-card">
         <a-avatar
             :size="64"
-            :image-url="avatar"
             class="card-avatar"
             :style="{ backgroundColor: '#14a9f8' }"
         >
@@ -51,11 +50,6 @@
 import {IconExport, IconUser} from '@arco-design/web-vue/es/icon';
 
 const props = defineProps({
-  avatar: {
-    type: String,
-    required: false,
-    default: null
-  },
   userName: {
     type: String,
     required: false,

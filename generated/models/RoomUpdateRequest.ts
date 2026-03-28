@@ -9,7 +9,6 @@ export type RoomUpdateRequest = {
     equipmentIds?: Array<number>;
     floor?: number;
     id?: number;
-    imageUrl?: string;
     roomName?: string;
     roomNumber?: string;
     status?: number;

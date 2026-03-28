@@ -99,14 +99,12 @@
         </div>
 
         <UserCardPopover
-            :user-avatar="avatar"
             :user-name="store.state.user.loginUser.userName"
             @to-user-profile="toUserProfile"
             @login-out="loginOut"
         >
           <a-avatar
               :size="40"
-              :image-url="avatar"
               class="avatar-hover"
               :style="{ backgroundColor: '#14a9f8', cursor: 'pointer' }"
           >
@@ -133,7 +131,6 @@ import { UserMessageControllerService, UserAttendeeControllerService } from '/ge
 const selectedKeys = ref(["/"]);
 const router = useRouter();
 const store = useStore();
-const avatar = ref("");
 const unreadCount = ref(0);
 const messageList = ref<any[]>([]);
 const pendingCount = ref(0);
@@ -306,15 +303,6 @@ const startPolling = () => {
   }, 30000);
 };
 
-const fetchAvatar = async () => {
-  // const res = await FileRecordControllerService.getAvatarUsingGet();
-  // if (res.code !== 0) {
-  //   message.error('头像获取失败: ' + res.message)
-  //   return;
-  // }
-  // avatar.value = `data:image/png;base64,${res.data}`
-};
-
 function loginOut() {
   console.log("退出登录");
   localStorage.removeItem('token');
@@ -334,7 +322,6 @@ function toRegister() {
 }
 
 onMounted(() => {
-  fetchAvatar();
   loadUnreadCount();
   loadPendingCount();
   startPolling();

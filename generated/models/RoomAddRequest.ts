@@ -8,7 +8,6 @@ export type RoomAddRequest = {
     description?: string;
     equipmentIds?: Array<number>;
     floor?: number;
-    imageUrl?: string;
     roomName?: string;
     roomNumber?: string;
     status?: number;
