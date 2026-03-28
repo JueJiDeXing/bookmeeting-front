@@ -8,12 +8,10 @@ import type { BaseResponse_EquipmentVO_ } from '../models/BaseResponse_Equipment
 import type { BaseResponse_List_Equipment_ } from '../models/BaseResponse_List_Equipment_';
 import type { BaseResponse_long_ } from '../models/BaseResponse_long_';
 import type { BaseResponse_Page_Equipment_ } from '../models/BaseResponse_Page_Equipment_';
-import type { BaseResponse_Page_EquipmentLogVO_ } from '../models/BaseResponse_Page_EquipmentLogVO_';
 import type { BaseResponse_Page_EquipmentVO_ } from '../models/BaseResponse_Page_EquipmentVO_';
 import type { DeleteRequest } from '../models/DeleteRequest';
 import type { EquipmentAddRequest } from '../models/EquipmentAddRequest';
 import type { EquipmentBatchDeleteRequest } from '../models/EquipmentBatchDeleteRequest';
-import type { EquipmentLogQueryRequest } from '../models/EquipmentLogQueryRequest';
 import type { EquipmentMoveRequest } from '../models/EquipmentMoveRequest';
 import type { EquipmentQueryRequest } from '../models/EquipmentQueryRequest';
 import type { EquipmentUpdateRequest } from '../models/EquipmentUpdateRequest';
@@ -179,27 +177,6 @@ export class AdminEquipmentControllerService {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/admin/equipment/list/page/vo',
-            body: queryRequest,
-            errors: {
-                401: `Unauthorized`,
-                403: `Forbidden`,
-                404: `Not Found`,
-            },
-        });
-    }
-    /**
-     * listEquipmentLogByPage
-     * @param queryRequest queryRequest
-     * @returns BaseResponse_Page_EquipmentLogVO_ OK
-     * @returns any Created
-     * @throws ApiError
-     */
-    public static listEquipmentLogByPageUsingPost(
-        queryRequest: EquipmentLogQueryRequest,
-    ): CancelablePromise<BaseResponse_Page_EquipmentLogVO_ | any> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/admin/equipment/log/page',
             body: queryRequest,
             errors: {
                 401: `Unauthorized`,

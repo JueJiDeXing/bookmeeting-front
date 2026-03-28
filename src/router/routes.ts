@@ -13,7 +13,6 @@ import UserUpdate from "@/views/admin/UserUpdate.vue";
 import RoomManage from "@/views/admin/RoomManage.vue";
 import RoomAdd from "@/views/admin/RoomAdd.vue";
 import EquipmentManage from "@/views/admin/EquipmentManage.vue";
-import EquipmentLog from "@/views/admin/EquipmentLog.vue";
 import BookingManage from "@/views/admin/BookingManage.vue";
 import BookingStatistics from "@/views/admin/BookingStatistics.vue";
 import RoomDetailView from "@/views/user/RoomDetailView.vue";
@@ -173,16 +172,6 @@ const adminRouters: Array<RouteRecordRaw> = [
         path: '/admin/equipment/category',
         name: '设备分类',
         component: EquipmentCategoryManage,
-        meta: {
-            access: AccessEnum.ADMIN,
-            hideInMenu: true,
-            layout: "AdminLayout"
-        }
-    },
-    {
-        path: '/admin/equipment/log',
-        name: '设备操作日志',
-        component: EquipmentLog,
         meta: {
             access: AccessEnum.ADMIN,
             hideInMenu: true,

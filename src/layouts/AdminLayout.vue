@@ -37,7 +37,6 @@
             <template #title>设备管理</template>
             <a-menu-item key="/admin/equipment">设备列表</a-menu-item>
             <a-menu-item key="/admin/equipment/category">设备分类</a-menu-item>
-            <a-menu-item key="/admin/equipment/log">设备操作日志</a-menu-item>
           </a-sub-menu>
 
           <!-- 预定管理子菜单 -->

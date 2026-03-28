@@ -34,7 +34,6 @@ export type { BaseResponse_Page_BookingRecord_ } from './models/BaseResponse_Pag
 export type { BaseResponse_Page_BookingVO_ } from './models/BaseResponse_Page_BookingVO_';
 export type { BaseResponse_Page_Equipment_ } from './models/BaseResponse_Page_Equipment_';
 export type { BaseResponse_Page_EquipmentCategoryVO_ } from './models/BaseResponse_Page_EquipmentCategoryVO_';
-export type { BaseResponse_Page_EquipmentLogVO_ } from './models/BaseResponse_Page_EquipmentLogVO_';
 export type { BaseResponse_Page_EquipmentVO_ } from './models/BaseResponse_Page_EquipmentVO_';
 export type { BaseResponse_Page_MeetingRoom_ } from './models/BaseResponse_Page_MeetingRoom_';
 export type { BaseResponse_Page_RoomVO_ } from './models/BaseResponse_Page_RoomVO_';
@@ -69,8 +68,6 @@ export type { EquipmentCategoryBatchDeleteRequest } from './models/EquipmentCate
 export type { EquipmentCategoryQueryRequest } from './models/EquipmentCategoryQueryRequest';
 export type { EquipmentCategoryUpdateRequest } from './models/EquipmentCategoryUpdateRequest';
 export type { EquipmentCategoryVO } from './models/EquipmentCategoryVO';
-export type { EquipmentLogQueryRequest } from './models/EquipmentLogQueryRequest';
-export type { EquipmentLogVO } from './models/EquipmentLogVO';
 export type { EquipmentMoveRequest } from './models/EquipmentMoveRequest';
 export type { EquipmentQueryRequest } from './models/EquipmentQueryRequest';
 export type { EquipmentUpdateRequest } from './models/EquipmentUpdateRequest';
@@ -86,7 +83,6 @@ export type { Page_BookingRecord_ } from './models/Page_BookingRecord_';
 export type { Page_BookingVO_ } from './models/Page_BookingVO_';
 export type { Page_Equipment_ } from './models/Page_Equipment_';
 export type { Page_EquipmentCategoryVO_ } from './models/Page_EquipmentCategoryVO_';
-export type { Page_EquipmentLogVO_ } from './models/Page_EquipmentLogVO_';
 export type { Page_EquipmentVO_ } from './models/Page_EquipmentVO_';
 export type { Page_MeetingRoom_ } from './models/Page_MeetingRoom_';
 export type { Page_RoomVO_ } from './models/Page_RoomVO_';

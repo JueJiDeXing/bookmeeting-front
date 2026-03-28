@@ -15,12 +15,6 @@
           </template>
           批量删除
         </a-button>
-        <a-button @click="router.push('/admin/equipment/log')">
-          <template #icon>
-            <icon-history/>
-          </template>
-          操作日志
-        </a-button>
         <a-button @click="router.push('/admin/equipment/category')">
           <template #icon>
             <icon-tag/>
